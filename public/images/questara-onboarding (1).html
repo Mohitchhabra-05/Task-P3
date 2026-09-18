@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUESTARA — Begin Your Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#8ECFEF;
+  --dark:#0A0A0A;
+  --dark2:#111118;
+  --yellow:#FFE600;
+  --yellow-dark:#E6CF00;
+  --pink:#FF2D78;
+  --pink-dark:#D91F60;
+  --cream:#F5E8C0;
+  --white:#FFFFFF;
+  --green:#39FF14;
+  --purple:#8B5CF6;
+  --font-pixel:'Press Start 2P',monospace;
+  --font-body:'VT323',monospace;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:var(--font-body);
+  background:var(--dark);
+  color:var(--white);
+  cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect width='8' height='8' fill='%23FF2D78'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%23FF2D78'/%3E%3C/svg%3E") 4 4,auto;
+}
+
+/* ===== SCANLINES OVERLAY ===== */
+body::after{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ===== STAGE WRAPPER ===== */
+#app{
+  width:100%;height:100%;
+  position:relative;overflow:hidden;
+}
+
+/* ===== SCREEN BASE ===== */
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+  opacity:0;pointer-events:none;
+  transition:opacity 0s;
+}
+.screen.active{
+  opacity:1;pointer-events:all;
+}
+
+/* Slide-in animation */
+.screen.slide-in{
+  animation:slideIn .35s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.screen.slide-out{
+  animation:slideOut .3s cubic-bezier(0.7,0,0.84,0) forwards;
+}
+@keyframes slideIn{
+  from{transform:translateX(60px);opacity:0}
+  to{transform:translateX(0);opacity:1}
+}
+@keyframes slideOut{
+  from{transform:translateX(0);opacity:1}
+  to{transform:translateX(-60px);opacity:0}
+}
+
+/* ===== TOP BAR ===== */
+.top-bar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--dark);border-bottom:4px solid var(--pink);
+  padding:10px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{
+  font-family:var(--font-pixel);font-size:10px;color:var(--white);
+  display:flex;align-items:center;gap:8px;
+}
+.logo-gem{
+  width:12px;height:12px;background:var(--pink);
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+}
+.progress-bar-wrap{
+  display:flex;align-items:center;gap:10px;
+}
+.progress-track{
+  width:160px;height:12px;
+  background:var(--dark2);border:3px solid var(--white);
+  position:relative;overflow:hidden;
+}
+.progress-fill{
+  height:100%;background:var(--green);
+  transition:width .5s cubic-bezier(0.16,1,0.3,1);
+  position:relative;
+}
+.progress-fill::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:4px;
+  background:rgba(255,255,255,0.6);
+  animation:scanPulse 1s linear infinite;
+}
+@keyframes scanPulse{0%,100%{opacity:1}50%{opacity:0}}
+.step-label{
+  font-family:var(--font-pixel);font-size:7px;color:var(--yellow);
+}
+
+/* ===== PIXEL CHARACTER (mascot) ===== */
+.mascot{
+  margin-bottom:20px;
+  animation:mascotFloat 2s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes mascotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.mascot svg{image-rendering:pixelated;}
+
+/* ===== DIALOGUE BOX ===== */
+.dialogue-box{
+  background:var(--dark);border:4px solid var(--white);
+  box-shadow:6px 6px 0 var(--pink);
+  padding:20px 24px;
+  max-width:560px;width:100%;
+  position:relative;margin-bottom:28px;
+}
+.dialogue-box::before{
+  content:'';position:absolute;
+  top:-20px;left:32px;
+  width:16px;height:16px;
+  background:var(--dark);
+  border-left:4px solid var(--white);
+  border-top:4px solid var(--white);
+  transform:rotate(45deg);
+  border-right:none;border-bottom:none;
+}
+.dialogue-tag{
+  font-family:var(--font-pixel);font-size:7px;
+  color:var(--pink);margin-bottom:10px;
+  letter-spacing:.05em;
+}
+.dialogue-text{
+  font-family:var(--font-pixel);font-size:11px;
+  line-height:2;color:var(--white);
+  letter-spacing:.03em;
+}
+.dialogue-text .highlight{color:var(--yellow)}
+.dialogue-text .pink{color:var(--pink)}
+
+/* ===== QUESTION TITLE ===== */
+.q-title{
+  font-family:var(--font-pixel);font-size:clamp(13px,2.5vw,18px);
+  color:var(--white);
+  text-align:center;
+  line-height:2;
+  max-width:560px;
+  margin-bottom:32px;
+  letter-spacing:.03em;
+}
+.q-title .accent{color:var(--yellow)}
+
+/* ===== TEXT INPUT ===== */
+.px-input{
+  width:100%;max-width:400px;
+  background:var(--dark2);
+  border:4px solid var(--white);
+  box-shadow:4px 4px 0 var(--pink);
+  padding:14px 16px;
+  font-family:var(--font-pixel);font-size:11px;
+  color:var(--white);
+  outline:none;
+  transition:border-color .1s, box-shadow .1s;
+  caret-color:var(--pink);
+  margin-bottom:20px;
+}
+.px-input::placeholder{color:rgba(255,255,255,0.3)}
+.px-input:focus{border-color:var(--pink);box-shadow:4px 4px 0 var(--yellow)}
+
+/* ===== OPTION CARDS ===== */
+.options-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:12px;
+  width:100%;max-width:560px;
+  margin-bottom:24px;
+}
+.options-grid.cols-2{grid-template-columns:1fr 1fr}
+.options-grid.cols-1{grid-template-columns:1fr}
+
+.opt-card{
+  background:var(--dark2);
+  border:4px solid var(--white);
+  box-shadow:4px 4px 0 rgba(255,255,255,0.2);
+  padding:16px;
+  cursor:pointer;
+  transition:transform .1s, box-shadow .1s, border-color .1s, background .1s;
+  display:flex;flex-direction:column;gap:6px;
+  position:relative;overflow:hidden;
+}
+.opt-card:hover{
+  transform:translate(-3px,-3px);
+  box-shadow:7px 7px 0 var(--yellow);
+  border-color:var(--yellow);
+}
+.opt-card.selected{
+  background:var(--pink);
+  border-color:var(--white);
+  box-shadow:4px 4px 0 var(--yellow);
+  transform:translate(-2px,-2px);
+}
+.opt-card.selected .opt-icon{filter:none}
+.opt-icon{font-size:24px;line-height:1;margin-bottom:4px}
+.opt-label{
+  font-family:var(--font-pixel);font-size:8px;
+  color:var(--white);line-height:1.8;
+}
+.opt-sub{
+  font-family:var(--font-body);font-size:16px;
+  color:rgba(255,255,255,0.6);
+  line-height:1.3;
+}
+.opt-card.selected .opt-sub{color:rgba(255,255,255,0.8)}
+/* check mark on selected */
+.opt-card.selected::after{
+  content:'✔';
+  position:absolute;top:6px;right:10px;
+  font-family:var(--font-pixel);font-size:9px;
+  color:var(--yellow);
+}
+
+/* Small horizontal options (for login choice) */
+.login-options{
+  display:flex;flex-direction:column;gap:12px;
+  width:100%;max-width:400px;margin-bottom:24px;
+}
+.login-btn{
+  display:flex;align-items:center;gap:14px;
+  background:var(--dark2);
+  border:4px solid var(--white);
+  box-shadow:4px 4px 0 rgba(255,255,255,0.2);
+  padding:16px 20px;
+  cursor:pointer;
+  font-family:var(--font-pixel);font-size:9px;
+  color:var(--white);
+  transition:transform .1s, box-shadow .1s, border-color .1s;
+  letter-spacing:.03em;
+}
+.login-btn:hover{
+  transform:translate(-3px,-3px);
+  box-shadow:7px 7px 0 var(--yellow);
+  border-color:var(--yellow);
+}
+.login-btn.phone-btn:hover{border-color:var(--pink);box-shadow:7px 7px 0 var(--pink)}
+.login-btn-icon{font-size:22px;width:28px;text-align:center}
+
+/* Phone input special */
+.phone-wrap{
+  display:flex;align-items:stretch;
+  width:100%;max-width:400px;
+  border:4px solid var(--white);
+  box-shadow:4px 4px 0 var(--pink);
+  margin-bottom:20px;
+  overflow:hidden;
+}
+.phone-code{
+  background:var(--pink);color:var(--white);
+  font-family:var(--font-pixel);font-size:10px;
+  padding:14px 12px;border-right:4px solid var(--white);
+  display:flex;align-items:center;white-space:nowrap;
+}
+.phone-wrap .px-input{
+  border:none;box-shadow:none;margin-bottom:0;flex:1;
+  border-radius:0;
+}
+.phone-wrap .px-input:focus{border:none;box-shadow:none}
+
+/* ===== CTA BUTTON ===== */
+.px-btn{
+  font-family:var(--font-pixel);font-size:10px;
+  color:var(--white);background:var(--dark);
+  border:4px solid var(--white);
+  padding:14px 32px;cursor:pointer;
+  box-shadow:4px 4px 0 var(--pink);
+  transition:transform .08s, box-shadow .08s;
+  display:inline-flex;align-items:center;gap:10px;
+  letter-spacing:.03em;
+}
+.px-btn:hover{transform:translate(-3px,-3px);box-shadow:7px 7px 0 var(--yellow)}
+.px-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--pink)}
+.px-btn:disabled{opacity:.4;pointer-events:none}
+.px-btn.primary{background:var(--pink)}
+.px-btn .btn-arrow{width:10px;height:10px;background:var(--yellow);clip-path:polygon(0 0,100% 50%,0 100%)}
+
+/* ===== SPECIFIC SCREENS ===== */
+
+/* WELCOME SCREEN */
+.welcome-screen{background:var(--sky);overflow:hidden}
+.sky-clouds{position:absolute;inset:0;pointer-events:none}
+.cloud{position:absolute;background:var(--white)}
+.c1{width:120px;height:32px;top:20%;left:8%;box-shadow:32px -16px 0 var(--white),64px 0 0 var(--white),-16px 0 0 var(--white)}
+.c2{width:80px;height:24px;top:35%;right:12%;box-shadow:24px -12px 0 var(--white),48px 0 0 var(--white),-12px 0 0 var(--white)}
+.c3{width:96px;height:28px;top:14%;left:42%;box-shadow:28px -14px 0 var(--white),56px 0 0 var(--white)}
+.welcome-title{
+  font-family:var(--font-pixel);font-size:clamp(20px,5vw,42px);
+  color:var(--dark);text-shadow:3px 3px 0 rgba(0,0,0,0.15);
+  text-align:center;margin-bottom:8px;letter-spacing:.04em;
+}
+.welcome-title span{color:var(--pink)}
+.welcome-sub{
+  font-family:var(--font-pixel);font-size:8px;
+  color:var(--dark);text-align:center;
+  background:var(--yellow);padding:8px 16px;
+  border:3px solid var(--dark);
+  margin-bottom:36px;line-height:2;max-width:400px;
+}
+.welcome-btns{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:360px}
+.welcome-btn{
+  width:100%;
+  font-family:var(--font-pixel);font-size:9px;
+  color:var(--white);background:var(--dark);
+  border:4px solid var(--dark);
+  padding:14px 20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:4px 4px 0 rgba(0,0,0,0.3);
+  transition:transform .1s, box-shadow .1s;
+  letter-spacing:.02em;
+}
+.welcome-btn:hover{transform:translate(-3px,-3px);box-shadow:7px 7px 0 var(--pink)}
+.welcome-btn.student{background:var(--pink)}
+.welcome-btn.teacher{background:var(--purple)}
+.welcome-btn-badge{
+  background:var(--yellow);color:var(--dark);
+  font-family:var(--font-pixel);font-size:6px;
+  padding:3px 6px;border:2px solid var(--dark);
+}
+
+/* PIXEL GROUND */
+.pixel-ground{
+  position:absolute;bottom:0;left:-5%;right:-5%;height:48px;
+  background:var(--dark);
+  clip-path:polygon(0 60%,2% 0%,4% 60%,6% 0%,8% 60%,10% 0%,12% 60%,14% 0%,16% 60%,18% 0%,20% 60%,22% 0%,24% 60%,26% 0%,28% 60%,30% 0%,32% 60%,34% 0%,36% 60%,38% 0%,40% 60%,42% 0%,44% 60%,46% 0%,48% 60%,50% 0%,52% 60%,54% 0%,56% 60%,58% 0%,60% 60%,62% 0%,64% 60%,66% 0%,68% 60%,70% 0%,72% 60%,74% 0%,76% 60%,78% 0%,80% 60%,82% 0%,84% 60%,86% 0%,88% 60%,90% 0%,92% 60%,94% 0%,96% 60%,98% 0%,100% 60%,100% 100%,0 100%);
+}
+.pixel-ground-pink{
+  position:absolute;bottom:0;left:-5%;right:-5%;height:32px;
+  background:var(--pink);
+  clip-path:polygon(0 60%,1.5% 0%,3% 60%,4.5% 0%,6% 60%,7.5% 0%,9% 60%,10.5% 0%,12% 60%,13.5% 0%,15% 60%,16.5% 0%,18% 60%,19.5% 0%,21% 60%,22.5% 0%,24% 60%,25.5% 0%,27% 60%,28.5% 0%,30% 60%,31.5% 0%,33% 60%,34.5% 0%,36% 60%,37.5% 0%,39% 60%,40.5% 0%,42% 60%,43.5% 0%,45% 60%,46.5% 0%,48% 60%,49.5% 0%,51% 60%,52.5% 0%,54% 60%,55.5% 0%,57% 60%,58.5% 0%,60% 60%,61.5% 0%,63% 60%,64.5% 0%,66% 60%,67.5% 0%,69% 60%,70.5% 0%,72% 60%,73.5% 0%,75% 60%,76.5% 0%,78% 60%,79.5% 0%,81% 60%,82.5% 0%,84% 60%,85.5% 0%,87% 60%,88.5% 0%,90% 60%,91.5% 0%,93% 60%,94.5% 0%,96% 60%,97.5% 0%,99% 60%,100% 0%,100% 100%,0 100%);
+}
+
+/* XP POP */
+.xp-pop{
+  position:fixed;top:80px;right:24px;z-index:500;
+  background:var(--yellow);color:var(--dark);
+  font-family:var(--font-pixel);font-size:9px;
+  padding:10px 16px;border:3px solid var(--dark);
+  box-shadow:4px 4px 0 var(--pink);
+  transform:translateY(-20px);opacity:0;
+  pointer-events:none;
+  transition:transform .3s, opacity .3s;
+}
+.xp-pop.show{transform:translateY(0);opacity:1}
+
+/* ===== ASSESSMENT SCREEN ===== */
+.assess-box{
+  background:var(--dark2);
+  border:4px solid var(--yellow);
+  box-shadow:6px 6px 0 var(--yellow);
+  padding:24px;max-width:560px;width:100%;
+  margin-bottom:24px;
+}
+.assess-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.assess-tag{
+  font-family:var(--font-pixel);font-size:7px;
+  color:var(--yellow);letter-spacing:.05em;
+}
+.assess-q-count{
+  font-family:var(--font-pixel);font-size:7px;
+  color:rgba(255,255,255,0.4);
+}
+.assess-body{
+  font-family:var(--font-pixel);font-size:11px;
+  color:var(--white);line-height:2;letter-spacing:.02em;
+}
+
+/* REWARD SCREEN */
+.reward-screen{background:var(--dark2)}
+.reward-screen .confetti-pixel{
+  position:absolute;width:10px;height:10px;
+  animation:confettiFall linear forwards;
+}
+@keyframes confettiFall{
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0}
+}
+.reward-gem{
+  font-size:60px;
+  animation:gemPop .5s cubic-bezier(0.16,1,0.3,1);
+  display:block;text-align:center;margin-bottom:12px;
+}
+@keyframes gemPop{0%{transform:scale(0) rotate(-10deg)}100%{transform:scale(1) rotate(0)}}
+.reward-title{
+  font-family:var(--font-pixel);font-size:clamp(14px,3vw,22px);
+  color:var(--yellow);text-align:center;
+  line-height:2;margin-bottom:8px;
+}
+.reward-sub{
+  font-family:var(--font-body);font-size:22px;
+  color:rgba(255,255,255,0.7);text-align:center;
+  margin-bottom:24px;max-width:400px;
+}
+.xp-badge{
+  background:var(--green);color:var(--dark);
+  font-family:var(--font-pixel);font-size:11px;
+  padding:10px 20px;border:4px solid var(--dark);
+  box-shadow:4px 4px 0 var(--dark);
+  margin-bottom:24px;
+  animation:xpPulse 1s ease-in-out infinite;
+}
+@keyframes xpPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+/* ===== BACK BUTTON ===== */
+.back-btn{
+  position:fixed;bottom:28px;left:24px;z-index:100;
+  font-family:var(--font-pixel);font-size:8px;
+  color:rgba(255,255,255,0.5);background:transparent;
+  border:3px solid rgba(255,255,255,0.2);
+  padding:8px 14px;cursor:pointer;
+  transition:color .1s, border-color .1s;
+}
+.back-btn:hover{color:var(--white);border-color:var(--white)}
+
+/* ===== TYPING CURSOR ===== */
+.type-cursor::after{content:'_';animation:blink 1s steps(1) infinite;color:var(--pink)}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* ===== OTP BOXES ===== */
+.otp-wrap{display:flex;gap:10px;margin-bottom:24px}
+.otp-input{
+  width:52px;height:60px;
+  background:var(--dark2);border:4px solid var(--white);
+  font-family:var(--font-pixel);font-size:18px;
+  color:var(--white);text-align:center;outline:none;
+  transition:border-color .1s;box-shadow:3px 3px 0 var(--pink);
+}
+.otp-input:focus{border-color:var(--pink);box-shadow:3px 3px 0 var(--yellow)}
+
+/* college input with toggle */
+.college-toggle{
+  display:flex;gap:8px;margin-bottom:16px;
+  width:100%;max-width:400px;
+}
+.toggle-opt{
+  flex:1;padding:10px 8px;text-align:center;
+  font-family:var(--font-pixel);font-size:7px;
+  border:3px solid var(--white);cursor:pointer;
+  color:rgba(255,255,255,0.5);background:var(--dark2);
+  transition:.1s;
+}
+.toggle-opt.active{background:var(--pink);color:var(--white);border-color:var(--pink)}
+
+/* ===== SECTION BG VARIANTS ===== */
+.bg-sky{background:var(--sky)}
+.bg-cream{background:var(--cream)}
+.bg-dark{background:var(--dark)}
+.bg-dark2{background:var(--dark2)}
+
+/* ===== SCROLL for small screens ===== */
+@media(max-height:600px){
+  .screen{justify-content:flex-start;padding-top:80px;overflow-y:auto;padding-bottom:80px}
+}
+
+/* Pixel stars decoration */
+.px-star{position:absolute;font-family:var(--font-pixel);font-size:10px;color:rgba(255,255,255,0.1);pointer-events:none;animation:twinkle 3s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar" id="topBar" style="display:none">
+  <div class="logo">
+    <div class="logo-gem"></div>
+    QUESTARA
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="step-label" id="stepLabel">1/8</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BACK BUTTON -->
+<button class="back-btn" id="backBtn" style="display:none" onclick="goBack()">◄ BACK</button>
+
+<!-- XP POP -->
+<div class="xp-pop" id="xpPop">+50 XP EARNED!</div>
+
+<!-- APP -->
+<div id="app">
+
+<!-- ===== SCREEN 0: WELCOME ===== -->
+<div class="screen welcome-screen active" id="s0">
+  <div class="sky-clouds">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+  </div>
+  <div class="mascot" style="margin-top:20px">
+    <svg width="72" height="72" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="1" width="6" height="6" fill="#0A0A0A"/>
+      <rect x="6" y="2" width="4" height="4" fill="#F5E8C0"/>
+      <rect x="6" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="9" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="7" y="5" width="2" height="1" fill="#FF2D78"/>
+      <rect x="4" y="7" width="8" height="5" fill="#FF2D78"/>
+      <rect x="3" y="8" width="2" height="3" fill="#FF2D78"/>
+      <rect x="11" y="8" width="2" height="3" fill="#FF2D78"/>
+      <rect x="5" y="12" width="2" height="3" fill="#0A0A0A"/>
+      <rect x="9" y="12" width="2" height="3" fill="#0A0A0A"/>
+      <rect x="6" y="7" width="4" height="1" fill="#FFE600"/>
+    </svg>
+  </div>
+  <div class="welcome-title">QUEST<span>ARA</span></div>
+  <div class="welcome-sub">LEARN. LEVEL UP. GET HIRED.</div>
+  <div class="welcome-btns">
+    <button class="welcome-btn student" onclick="goTo(1)">
+      <span>▶ LOGIN AS STUDENT</span>
+      <span class="welcome-btn-badge">+100 XP</span>
+    </button>
+    <button class="welcome-btn teacher" onclick="alert('Teacher portal coming soon!')">
+      <span>▶ LOGIN AS TEACHER</span>
+      <span class="welcome-btn-badge">SOON</span>
+    </button>
+  </div>
+  <div class="pixel-ground-pink"></div>
+  <div class="pixel-ground"></div>
+</div>
+
+<!-- ===== SCREEN 1: LOGIN METHOD ===== -->
+<div class="screen bg-dark" id="s1">
+  <span class="px-star" style="top:15%;left:10%">✦</span>
+  <span class="px-star" style="top:70%;right:8%;animation-delay:1.2s">✦</span>
+  <span class="px-star" style="top:30%;right:20%;animation-delay:0.5s">+</span>
+  <div class="mascot">
+    <svg width="60" height="60" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="1" width="6" height="6" fill="#0A0A0A"/>
+      <rect x="6" y="2" width="4" height="4" fill="#F5E8C0"/>
+      <rect x="6" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="9" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="7" y="5" width="2" height="1" fill="#FF2D78"/>
+      <rect x="4" y="7" width="8" height="5" fill="#8B5CF6"/>
+      <rect x="3" y="8" width="2" height="3" fill="#8B5CF6"/>
+      <rect x="11" y="8" width="2" height="3" fill="#8B5CF6"/>
+      <rect x="5" y="12" width="2" height="3" fill="#0A0A0A"/>
+      <rect x="9" y="12" width="2" height="3" fill="#0A0A0A"/>
+      <rect x="6" y="7" width="4" height="1" fill="#FFE600"/>
+    </svg>
+  </div>
+  <div class="dialogue-box">
+    <div class="dialogue-tag">◈ GUIDE PIXEL</div>
+    <div class="dialogue-text">Hey hero! 👋 Ready to start your <span class="highlight">AI quest?</span><br>First, let's get you logged in.<br>Pick your portal—</div>
+  </div>
+  <div class="q-title">How do you want to <span class="accent">enter the realm?</span></div>
+  <div class="login-options">
+    <button class="login-btn phone-btn" onclick="goTo(2)">
+      <span class="login-btn-icon">📱</span>
+      <span>CONTINUE WITH PHONE</span>
+    </button>
+    <button class="login-btn" onclick="goTo(3)">
+      <span class="login-btn-icon">✉</span>
+      <span>CONTINUE WITH GMAIL</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== SCREEN 2: PHONE LOGIN ===== -->
+<div class="screen bg-dark" id="s2">
+  <div class="dialogue-box">
+    <div class="dialogue-tag">◈ GUIDE PIXEL</div>
+    <div class="dialogue-text">Enter your <span class="highlight">phone number</span> and we'll send a <span class="pink">secret code!</span></div>
+  </div>
+  <div class="q-title">What's your <span class="accent">battle number?</span> 📟</div>
+  <div class="phone-wrap">
+    <div class="phone-code">🇮🇳 +91</div>
+    <input class="px-input" id="phoneInput" type="tel" placeholder="98XXXXXXXX" maxlength="10">
+  </div>
+  <button class="px-btn primary" onclick="handlePhone()">SEND CODE <div class="btn-arrow"></div></button>
+  <div style="font-family:var(--font-pixel);font-size:7px;color:rgba(255,255,255,0.3);margin-top:14px;text-align:center;line-height:2">
+    BY CONTINUING YOU AGREE TO OUR TERMS
+  </div>
+</div>
+
+<!-- ===== SCREEN 2B: OTP ===== -->
+<div class="screen bg-dark" id="s2b">
+  <div class="dialogue-box">
+    <div class="dialogue-tag">◈ GUIDE PIXEL</div>
+    <div class="dialogue-text">We sent a <span class="highlight">4-digit code</span> to your phone!<br>Enter it below to <span class="pink">unlock the gate.</span></div>
+  </div>
+  <div class="q-title">Enter your <span class="accent">access code</span> 🔑</div>
+  <div class="otp-wrap" id="otpWrap">
+    <input class="otp-input" type="text" maxlength="1" id="otp0" oninput="otpNext(this,1)">
+    <input class="otp-input" type="text" maxlength="1" id="otp1" oninput="otpNext(this,2)">
+    <input class="otp-input" type="text" maxlength="1" id="otp2" oninput="otpNext(this,3)">
+    <input class="otp-input" type="text" maxlength="1" id="otp3" oninput="otpDone(this)">
+  </div>
+  <button class="px-btn primary" onclick="goTo(4)">VERIFY <div class="btn-arrow"></div></button>
+  <div style="font-family:var(--font-pixel);font-size:7px;color:rgba(255,255,255,0.3);margin-top:14px;cursor:pointer" onclick="goTo(2)">◄ RESEND CODE</div>
+</div>
+
+<!-- ===== SCREEN 3: GMAIL (mock) ===== -->
+<div class="screen bg-dark" id="s3">
+  <div class="dialogue-box">
+    <div class="dialogue-tag">◈ GUIDE PIXEL</div>
+    <div class="dialogue-text">Connecting your <span class="highlight">Google account…</span><br><span class="pink">Almost there, hero!</span></div>
+  </div>
+  <div style="font-size:64px;text-align:center;margin-bottom:20px;animation:mascotFloat 2s ease-in-out infinite">📧</div>
+  <div class="q-title">Enter your <span class="accent">Gmail address</span></div>
+  <input class="px-input" id="gmailInput" type="email" placeholder="hero@gmail.com" style="max-width:400px">
+  <button class="px-btn primary" onclick="goTo(4)">CONTINUE <div class="btn-arrow"></div></button>
+</div>
+
+<!-- ===== SCREEN 4: NAME ===== -->
+<div class="screen bg-dark" id="s4">
+  <span class="px-star" style="top:12%;left:7%">✦</span>
+  <span class="px-star" style="top:75%;right:9%;animation-delay:.8s">✦</span>
+  <div class="mascot">
+    <svg width="60" height="60" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="1" width="6" height="6" fill="#0A0A0A"/>
+      <rect x="6" y="2" width="4" height="4" fill="#F5E8C0"/>
+      <rect x="6" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="9" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="7" y="5" width="2" height="1" fill="#39FF14"/>
+      <rect x="4" y="7" width="8" height="5" fill="#39FF14"/>
+      <rect x="3" y="8" width="2" height="3" fill="#39FF14"/>
+      <rect x="11" y="8" width="2" height="3" fill="#39FF14"/>
+      <rect x="5" y="12" width="2" height="3" fill="#0A0A0A"/>
+      <rect x="9" y="12" width="2" height="3" fill="#0A0A0A"/>
+    </svg>
+  </div>
+  <div class="dialogue-box">
+    <div class="dialogue-tag">◈ GUIDE PIXEL</div>
+    <div class="dialogue-text">Woohoo! You're in! 🎉<br>Every hero needs a <span class="highlight">name.</span><br>What should we call you?</div>
+  </div>
+  <div class="q-title">Your hero <span class="accent">name</span> is…</div>
+  <input class="px-input type-cursor" id="nameInput" type="text" placeholder="TYPE YOUR NAME" oninput="updateNamePreview(this)">
+  <div id="namePreview" style="font-family:var(--font-pixel);font-size:8px;color:var(--pink);margin-bottom:20px;min-height:20px;transition:.2s"></div>
+  <button class="px-btn primary" id="nameCta" onclick="handleName()" disabled>THAT'S ME! <div class="btn-arrow"></div></button>
+</div>
+
+<!-- ===== SCREEN 5: LOCATION ===== -->
+<div class="screen bg-dark" id="s5">
+  <div class="q-title">Where is <span class="accent">your base?</span> 🗺️</div>
+  <div class="options-grid cols-2" style="max-width:440px">
+    <div class="opt-card" onclick="selectOpt(this,'location')">
+      <div class="opt-icon">🏙️</div>
+      <div class="opt-label">METRO CITY</div>
+      <div class="opt-sub">Mumbai, Delhi, Bangalore, Hyderabad…</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'location')">
+      <div class="opt-icon">🌆</div>
+      <div class="opt-label">TIER 2 CITY</div>
+      <div class="opt-sub">Pune, Jaipur, Lucknow, Chandigarh…</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'location')">
+      <div class="opt-icon">🏘️</div>
+      <div class="opt-label">SMALL TOWN</div>
+      <div class="opt-sub">District or town level</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'location')">
+      <div class="opt-icon">🌍</div>
+      <div class="opt-label">OUTSIDE INDIA</div>
+      <div class="opt-sub">International student</div>
+    </div>
+  </div>
+  <button class="px-btn primary" id="locCta" onclick="goTo(6)" disabled>CONFIRM BASE <div class="btn-arrow"></div></button>
+</div>
+
+<!-- ===== SCREEN 6: SPECIALISATION ===== -->
+<div class="screen bg-dark" id="s6">
+  <div class="q-title">What's your <span class="accent">field of study?</span> 📚</div>
+  <div class="options-grid" style="max-width:560px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+    <div class="opt-card" onclick="selectOpt(this,'spec')">
+      <div class="opt-icon">💻</div>
+      <div class="opt-label">COMPUTER SCIENCE</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'spec')">
+      <div class="opt-icon">⚙️</div>
+      <div class="opt-label">ENGINEERING</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'spec')">
+      <div class="opt-icon">📊</div>
+      <div class="opt-label">BUSINESS / MBA</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'spec')">
+      <div class="opt-icon">🔬</div>
+      <div class="opt-label">SCIENCE</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'spec')">
+      <div class="opt-icon">🎨</div>
+      <div class="opt-label">ARTS / DESIGN</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'spec')">
+      <div class="opt-icon">🧩</div>
+      <div class="opt-label">OTHER</div>
+    </div>
+  </div>
+  <button class="px-btn primary" id="specCta" onclick="goTo(7)" disabled>LOCK IN <div class="btn-arrow"></div></button>
+</div>
+
+<!-- ===== SCREEN 7: COLLEGE / SELF ===== -->
+<div class="screen bg-dark" id="s7">
+  <div class="q-title">Are you <span class="accent">studying somewhere</span><br>or self-learning? 🎓</div>
+  <div class="college-toggle">
+    <div class="toggle-opt active" id="tog_college" onclick="switchCollegeToggle('college')">AT COLLEGE</div>
+    <div class="toggle-opt" id="tog_self" onclick="switchCollegeToggle('self')">SELF LEARNER</div>
+  </div>
+  <div id="college-input-wrap" style="width:100%;max-width:400px">
+    <input class="px-input" id="collegeInput" type="text" placeholder="TYPE YOUR COLLEGE NAME…" style="max-width:100%">
+    <div style="font-family:var(--font-pixel);font-size:7px;color:rgba(255,255,255,0.3);margin-bottom:8px">EX: IIT DELHI, VIT, MANIT…</div>
+  </div>
+  <div id="self-input-wrap" style="display:none;width:100%;max-width:400px">
+    <div style="background:var(--dark2);border:4px solid var(--purple);padding:16px;box-shadow:4px 4px 0 var(--purple);margin-bottom:20px">
+      <div style="font-family:var(--font-pixel);font-size:9px;color:var(--purple);margin-bottom:8px">SELF-LEARNER MODE 🚀</div>
+      <div style="font-family:var(--font-body);font-size:18px;color:rgba(255,255,255,0.7);line-height:1.5">No college? No problem. You're already ahead of the pack!</div>
+    </div>
+  </div>
+  <button class="px-btn primary" onclick="goTo(8)">NEXT <div class="btn-arrow"></div></button>
+</div>
+
+<!-- ===== SCREEN 8: GOAL / WHY ===== -->
+<div class="screen bg-dark" id="s8">
+  <div class="q-title">Why are you <span class="accent">joining Questara?</span> 🎯</div>
+  <div class="options-grid cols-1" style="max-width:500px">
+    <div class="opt-card" onclick="selectOpt(this,'goal')">
+      <div class="opt-icon">🌱</div>
+      <div class="opt-label">TOTAL BEGINNER IN AI</div>
+      <div class="opt-sub">I know nothing about AI yet — starting from zero</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'goal')">
+      <div class="opt-icon">🧠</div>
+      <div class="opt-label">LEARN AI DEEPLY</div>
+      <div class="opt-sub">I want to understand how AI actually works</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'goal')">
+      <div class="opt-icon">💼</div>
+      <div class="opt-label">JOB READY IN AI</div>
+      <div class="opt-sub">Get placed in top AI/tech companies</div>
+    </div>
+    <div class="opt-card" onclick="selectOpt(this,'goal')">
+      <div class="opt-icon">🛠️</div>
+      <div class="opt-label">BUILD AI PROJECTS</div>
+      <div class="opt-sub">I want to ship real products using AI</div>
+    </div>
+  </div>
+  <button class="px-btn primary" id="goalCta" onclick="goTo(9)" disabled>THIS IS MY QUEST <div class="btn-arrow"></div></button>
+</div>
+
+<!-- ===== SCREEN 9: ASSESSMENT INTRO ===== -->
+<div class="screen bg-dark2" id="s9">
+  <span class="px-star" style="top:10%;left:12%">✦</span>
+  <span class="px-star" style="top:80%;right:10%;animation-delay:1.5s">✦</span>
+  <span class="px-star" style="top:50%;left:5%;animation-delay:0.7s">+</span>
+  <div class="mascot">
+    <svg width="60" height="60" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="1" width="6" height="6" fill="#0A0A0A"/>
+      <rect x="6" y="2" width="4" height="4" fill="#F5E8C0"/>
+      <rect x="6" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="9" y="3" width="1" height="1" fill="#0A0A0A"/>
+      <rect x="7" y="5" width="2" height="1" fill="#FFE600"/>
+      <rect x="4" y="7" width="8" height="5" fill="#FFE600"/>
+      <rect x="3" y="8" width="2" height="3" fill="#FFE600"/>
+      <rect x="11" y="8" width="2" height="3" fill="#FFE600"/>
+      <rect x="5" y="12" width="2" height="3" fill="#0A0A0A"/>
+      <rect x="9" y="12" width="2" height="3" fill="#0A0A0A"/>
+    </svg>
+  </div>
+  <div class="assess-box">
+    <div class="assess-header">
+      <div class="assess-tag">◈ MINI QUEST UNLOCKED</div>
+      <div class="assess-q-count">~5 QUESTIONS</div>
+    </div>
+    <div class="assess-body">
+      Before we build your <span style="color:var(--yellow)">custom learning path</span>, we have a small <span style="color:var(--pink)">AI Knowledge Check.</span><br><br>
+      It's not a test — it's your <span style="color:var(--green)">power scanner.</span> We'll find your strengths and gaps, then build a path just for you.
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:24px">
+    <div style="background:var(--dark);border:3px solid var(--green);padding:8px 14px;font-family:var(--font-pixel);font-size:7px;color:var(--green)">⏱ 3 MINS</div>
+    <div style="background:var(--dark);border:3px solid var(--yellow);padding:8px 14px;font-family:var(--font-pixel);font-size:7px;color:var(--yellow)">⚡ +200 XP REWARD</div>
+    <div style="background:var(--dark);border:3px solid var(--purple);padding:8px 14px;font-family:var(--font-pixel);font-size:7px;color:var(--purple)">🎯 PERSONALISED PATH</div>
+  </div>
+  <button class="px-btn primary" onclick="goTo(10)" style="animation:btnBlink 1.5s steps(1) infinite">
+    ▶ START ASSESSMENT
+    <div class="btn-arrow"></div>
+  </button>
+  <div style="font-family:var(--font-pixel);font-size:7px;color:rgba(255,255,255,0.3);margin-top:14px;cursor:pointer" onclick="goTo(10)">SKIP FOR NOW →</div>
+</div>
+
+<!-- ===== SCREEN 10: DONE / REWARD ===== -->
+<div class="screen reward-screen" id="s10">
+  <div id="confettiContainer"></div>
+  <div class="reward-gem">💎</div>
+  <div class="reward-title">HERO PROFILE<br>CREATED!</div>
+  <div class="reward-sub">Your quest begins now, <span id="heroNameDisplay" style="color:var(--yellow)">Hero</span>!</div>
+  <div class="xp-badge">+100 XP EARNED! PROFILE COMPLETE</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:28px" id="summaryTags"></div>
+  <button class="px-btn primary" onclick="goToDashboard()" style="animation:xpPulse 1s ease-in-out infinite">
+    ENTER THE REALM ▶
+  </button>
+</div>
+
+</div><!-- /app -->
+
+<style>
+@keyframes btnBlink{0%,49%{box-shadow:4px 4px 0 rgba(0,0,0,0.3)}50%,100%{box-shadow:4px 4px 0 var(--yellow)}}
+</style>
+
+<script>
+/* ===== STATE ===== */
+const state = {
+  name:'',
+  location:'',
+  spec:'',
+  college:'',
+  goal:'',
+  loginMethod:'',
+};
+
+let currentScreen = 0;
+const TOTAL_STEPS = 9; // screens 2-10 count as steps
+
+/* screens that show top bar */
+const showTopBarScreens = [1,2,'2b',3,4,5,6,7,8,9,10];
+const showBackScreens    = [1,2,'2b',3,4,5,6,7,8,9];
+
+const stepMap = {
+  1:1, 2:2, '2b':2, 3:2, 4:3, 5:4, 6:5, 7:6, 8:7, 9:8, 10:9
+};
+
+/* ===== NAVIGATION ===== */
+let screenHistory = [0];
+
+function goTo(n){
+  const cur = screenHistory[screenHistory.length-1];
+  const curEl = document.getElementById('s'+cur);
+  const nxtEl = document.getElementById('s'+n);
+  if(!nxtEl) return;
+
+  curEl.classList.remove('active');
+  curEl.classList.add('slide-out');
+  setTimeout(()=>{
+    curEl.classList.remove('slide-out');
+  },300);
+
+  nxtEl.classList.add('active','slide-in');
+  setTimeout(()=>nxtEl.classList.remove('slide-in'),400);
+
+  screenHistory.push(n);
+  updateUI(n);
+}
+
+function goBack(){
+  if(screenHistory.length<=1) return;
+  const cur = screenHistory.pop();
+  const prev= screenHistory[screenHistory.length-1];
+  document.getElementById('s'+cur).classList.remove('active');
+  const prevEl = document.getElementById('s'+prev);
+  prevEl.classList.add('active');
+  updateUI(prev);
+}
+
+function updateUI(n){
+  const topBar = document.getElementById('topBar');
+  const backBtn= document.getElementById('backBtn');
+  const isOnboarding = showTopBarScreens.includes(n);
+  topBar.style.display = isOnboarding ? 'flex' : 'none';
+  backBtn.style.display= showBackScreens.includes(n) ? 'block':'none';
+
+  const step = stepMap[n] || 0;
+  const pct  = Math.round((step/TOTAL_STEPS)*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('stepLabel').textContent = step+'/'+TOTAL_STEPS;
+}
+
+/* ===== OPTION SELECTION ===== */
+function selectOpt(el, group){
+  // deselect others in same parent
+  el.closest('.options-grid').querySelectorAll('.opt-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  state[group] = el.querySelector('.opt-label').textContent;
+
+  // enable next button
+  const ctaMap = {location:'locCta', spec:'specCta', goal:'goalCta'};
+  if(ctaMap[group]){
+    const btn = document.getElementById(ctaMap[group]);
+    if(btn) btn.removeAttribute('disabled');
+  }
+
+  showXP('+25 XP');
+}
+
+/* ===== PHONE HANDLER ===== */
+function handlePhone(){
+  const v = document.getElementById('phoneInput').value;
+  if(v.length >= 10){
+    goTo('2b');
+  } else {
+    document.getElementById('phoneInput').style.borderColor='var(--pink)';
+  }
+}
+
+/* ===== OTP ===== */
+function otpNext(el, nextIdx){
+  if(el.value && nextIdx <= 3){
+    document.getElementById('otp'+nextIdx).focus();
+  }
+}
+function otpDone(el){
+  if(el.value) setTimeout(()=>goTo(4),300);
+}
+
+/* ===== NAME ===== */
+function updateNamePreview(el){
+  const v = el.value.trim();
+  state.name = v;
+  const prev = document.getElementById('namePreview');
+  if(v.length>0){
+    prev.textContent = '>> WELCOME, '+v.toUpperCase()+'!';
+    document.getElementById('nameCta').removeAttribute('disabled');
+  } else {
+    prev.textContent = '';
+    document.getElementById('nameCta').setAttribute('disabled','true');
+  }
+}
+function handleName(){
+  const v = document.getElementById('nameInput').value.trim();
+  if(v){
+    state.name = v;
+    showXP('+50 XP');
+    goTo(5);
+  }
+}
+
+/* ===== COLLEGE TOGGLE ===== */
+function switchCollegeToggle(mode){
+  document.getElementById('tog_college').classList.toggle('active', mode==='college');
+  document.getElementById('tog_self').classList.toggle('active', mode==='self');
+  document.getElementById('college-input-wrap').style.display = mode==='college' ? 'block':'none';
+  document.getElementById('self-input-wrap').style.display   = mode==='self'    ? 'block':'none';
+}
+
+/* ===== XP POP ===== */
+function showXP(msg){
+  const pop = document.getElementById('xpPop');
+  pop.textContent = msg;
+  pop.classList.add('show');
+  clearTimeout(pop._t);
+  pop._t = setTimeout(()=>pop.classList.remove('show'), 2000);
+}
+
+/* ===== REWARD SCREEN ===== */
+function buildRewardScreen(){
+  // hero name
+  const nm = state.name || 'HERO';
+  document.getElementById('heroNameDisplay').textContent = nm.toUpperCase();
+
+  // summary tags
+  const tags = document.getElementById('summaryTags');
+  tags.innerHTML = '';
+  const items = [
+    {label: state.location || 'LOCATION', color:'#8ECFEF'},
+    {label: state.spec || 'STUDENT', color:'#8B5CF6'},
+    {label: state.goal ? state.goal.split(' ')[0]+'...' : 'LEARNER', color:'#FF2D78'},
+  ];
+  items.forEach(it=>{
+    const d = document.createElement('div');
+    d.style.cssText = `background:var(--dark);border:3px solid ${it.color};padding:6px 12px;font-family:var(--font-pixel);font-size:7px;color:${it.color}`;
+    d.textContent = it.label;
+    tags.appendChild(d);
+  });
+
+  // confetti
+  spawnConfetti();
+  showXP('+100 XP EARNED!');
+}
+
+function spawnConfetti(){
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#FFE600','#FF2D78','#39FF14','#8B5CF6','#8ECFEF','#F5E8C0'];
+  for(let i=0;i<30;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-pixel';
+    el.style.left = Math.random()*100+'vw';
+    el.style.top  = '-20px';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.width  = (Math.random()*10+6)+'px';
+    el.style.height = (Math.random()*10+6)+'px';
+    el.style.animationDuration = (Math.random()*2+2)+'s';
+    el.style.animationDelay   = (Math.random()*1)+'s';
+    container.appendChild(el);
+  }
+}
+
+function goToDashboard(){
+  alert('🎮 ENTERING QUESTARA DASHBOARD...\n\nYour personalised AI learning path is being built!');
+}
+
+/* ===== OVERRIDE goTo to build reward on arrival ===== */
+const _origGoTo = goTo;
+// patch screen 10 entry
+const origGoTo = goTo;
+window.goTo = function(n){
+  origGoTo(n);
+  if(n===10) setTimeout(buildRewardScreen, 200);
+};
+
+/* ===== KEYBOARD ===== */
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    const cur = screenHistory[screenHistory.length-1];
+    if(cur===4) handleName();
+  }
+});
+</script>
+</body>
+</html>
