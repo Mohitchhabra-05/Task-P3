@@ -1,35 +1,37 @@
 function FeaturedTutorials() {
-
   const tutorials = [
     {
       title: "React Basics",
       author: "Mohit",
-      image: "/images/tutorial1.jpeg"
+      image: "/images/tutorial1.jpeg",
+      description: "Learn how to create simple React components.",
+      rating: "★★★★★"
     },
     {
       title: "JavaScript Basics",
       author: "Mohit",
-      image: "/images/tutorial2.jpeg"
+      image: "/images/tutorial2.jpeg",
+      description: "Learn variables, functions and basic JavaScript.",
+      rating: "★★★★☆"
     },
     {
       title: "Web Development",
       author: "Mohit",
-      image: "/images/tutorial3.jpeg"
+      image: "/images/tutorial3.jpeg",
+      description: "Learn the basics of creating web pages.",
+      rating: "★★★★★"
     }
   ]
 
   return (
     <section className="p-6">
-
       <h2 className="text-3xl font-bold text-center mb-6 text-gray-700">
         Featured Tutorials
       </h2>
 
-      <div className="flex gap-6 justify-center">
-
+      <div className="flex flex-wrap gap-6 justify-center">
         {tutorials.map((tutorial) => (
-          <div className="border p-4 w-80">
-
+          <div key={tutorial.title} className="border p-4 w-80">
             <img
               src={tutorial.image}
               alt={tutorial.title}
@@ -40,13 +42,11 @@ function FeaturedTutorials() {
               {tutorial.title}
             </h3>
 
-            <p>
-              By {tutorial.author}
-            </p>
-
+            <p>By {tutorial.author}</p>
+            <p className="mt-2">{tutorial.description}</p>
+            <p className="mt-2 text-yellow-500">{tutorial.rating}</p>
           </div>
         ))}
-
       </div>
 
       <div className="text-center mt-6">
@@ -54,7 +54,6 @@ function FeaturedTutorials() {
           See All Tutorials
         </button>
       </div>
-
     </section>
   )
 }
